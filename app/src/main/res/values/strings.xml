@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">SeriesApp</string>
+    <string name="action_settings">Settings</string>
+    <string name="main_activity_title">Shows I watch:</string>
+    <string name="main_grid_empty">You haven\'t added any shows yet!</string>
+    <string name="browse_shows">Browse shows</string>
+</resources>
