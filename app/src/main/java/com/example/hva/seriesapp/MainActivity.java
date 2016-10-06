@@ -7,7 +7,9 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.ContextMenu;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,11 +24,13 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private static final String PREF_DATA = "pref_data";
+    public static final String SERIES_ID = "seriesId";
     private GridView gridView;
     private DataSource dataSource;
     private ArrayAdapter<Series> seriesArrayAdapter;
     private CustomAdapter adapter;
-    List<GridItem> items;
+    private List<Series> series;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,10 +43,10 @@ public class MainActivity extends AppCompatActivity {
         TextView emptyView = (TextView) findViewById(R.id.main_grid_empty);
         gridView.setEmptyView(emptyView);
 
-          dataSource = new DataSource(this);
-          List<Series> series = dataSource.getAllWatchedSeries();
-          adapter = new CustomAdapter(series, this);
-          gridView.setAdapter(adapter);
+        dataSource = new DataSource(this);
+        series = dataSource.getAllWatchedSeries();
+        adapter = new CustomAdapter(series, this);
+        gridView.setAdapter(adapter);
 
         adapter.notifyDataSetChanged();
 
@@ -50,15 +54,15 @@ public class MainActivity extends AppCompatActivity {
 
         if (!isDatabaseFilled) {
 
-            long seriesId = dataSource.createSeries("Game of thrones", R.drawable.game_of_thrones);
+            long seriesId = dataSource.createSeries("Game of Thrones", R.drawable.game_of_thrones, "All men must die!");
             Series newSeries = dataSource.getSeries(seriesId);
             series.add(newSeries);
 
-            seriesId = dataSource.createSeries("Breaking Bad", R.drawable.breaking_bad);
+            seriesId = dataSource.createSeries("Breaking Bad", R.drawable.breaking_bad, "Meth and stuff");
             newSeries = dataSource.getSeries(seriesId);
             series.add(newSeries);
 
-            seriesId = dataSource.createSeries("Fargo", R.drawable.fargo);
+            seriesId = dataSource.createSeries("Fargo", R.drawable.fargo, "What if you are right and they are wrong?");
             newSeries = dataSource.getSeries(seriesId);
             series.add(newSeries);
 
@@ -75,7 +79,20 @@ public class MainActivity extends AppCompatActivity {
 
         registerForContextMenu(gridView);
 
-        
+
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Series clickedSeries = (Series) gridView.getItemAtPosition(position);
+                long seriesId = clickedSeries.getId();
+                Intent detailsIntent = new Intent(MainActivity.this, ShowDetailActivity.class);
+
+                detailsIntent.putExtra(SERIES_ID, seriesId);
+                startActivity(detailsIntent);
+
+            }
+        });
+
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -109,6 +126,43 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+
+        getMenuInflater().inflate(R.menu.context_menu, menu);
+        MenuItem deleteButton = menu.findItem(R.id.context_menu_delete_item);
+        deleteButton.setTitle("Delete show and all your notes?");
+
+        super.onCreateContextMenu(menu, v, menuInfo);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+
+        AdapterView.AdapterContextMenuInfo itemInfo = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        if (item.getItemId() == R.id.context_menu_delete_item) {
+
+
+            Series seriesToDelete = adapter.getItem(itemInfo.position);
+            dataSource.deleteWatchedSeries(seriesToDelete);
+
+            dataSource = new DataSource(this);
+            List<Series> series = dataSource.getAllWatchedSeries();
+            CustomAdapter newAdapter = new CustomAdapter(series, this);
+            gridView.setAdapter(newAdapter);
+
+//            finish();
+//            startActivity(getIntent());
+            return true;
+
+        }
+
+//        gridView.setAdapter(adapter);
+//        adapter.notifyDataSetChanged();
+
+        return super.onContextItemSelected(item);
     }
 
     @Override

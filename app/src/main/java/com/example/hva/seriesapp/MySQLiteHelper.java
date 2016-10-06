@@ -21,6 +21,7 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
     public static final String COLUMN_SERIES_ID = "series_id";
     public static final String COLUMN_SERIES_TITLE = "series_title";
     public static final String COLUMN_SERIES_POSTER = "series_poster";
+    public static final String COLUMN_SERIES_DESCRIPTION = "series_description";
 
 
     //create table
@@ -29,7 +30,8 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
                     " ( " +
                     COLUMN_SERIES_ID + " integer primary key autoincrement, " +
                     COLUMN_SERIES_TITLE +  " text not null, " +
-                    COLUMN_SERIES_POSTER + " integer " +
+                    COLUMN_SERIES_POSTER + " integer, " +
+                    COLUMN_SERIES_DESCRIPTION + " text not null " +
                     " );";
 
     //created table for selected shows
@@ -38,7 +40,8 @@ public class MySQLiteHelper extends SQLiteOpenHelper {
                     " ( " +
                     COLUMN_SERIES_ID + " integer primary key autoincrement, " +
                     COLUMN_SERIES_TITLE +  " text not null, " +
-                    COLUMN_SERIES_POSTER + " integer " +
+                    COLUMN_SERIES_POSTER + " integer, " +
+                    COLUMN_SERIES_DESCRIPTION + " text not null " +
                     " );";
 
     public MySQLiteHelper(Context context) {

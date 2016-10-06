@@ -48,7 +48,7 @@ public class AddSeriesActivity extends AppCompatActivity {
                 Toast.makeText(AddSeriesActivity.this, "Show added", Toast.LENGTH_SHORT).show();
 
                 Series series = (Series) parent.getItemAtPosition(position);
-                dataSource.createWatchedSeries(series.getTitle(), series.getImageSource());
+                dataSource.createWatchedSeries(series.getTitle(), series.getImageSource(), series.getDescription());
 
 
 

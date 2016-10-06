@@ -22,7 +22,7 @@ public class DataSource {
     private MySQLiteHelper dbHelper;
 
     private String[] seriesAllColumns = {MySQLiteHelper.COLUMN_SERIES_ID,
-            MySQLiteHelper.COLUMN_SERIES_TITLE, MySQLiteHelper.COLUMN_SERIES_POSTER};
+            MySQLiteHelper.COLUMN_SERIES_TITLE, MySQLiteHelper.COLUMN_SERIES_POSTER, MySQLiteHelper.COLUMN_SERIES_DESCRIPTION};
 
     public DataSource(Context context) {
         dbHelper = new MySQLiteHelper(context);
@@ -38,13 +38,14 @@ public class DataSource {
         dbHelper.close();
     }
 
-    public long createSeries(String series, int imageResource) {
+    public long createSeries(String series, int imageResource, String description) {
         if (!database.isOpen())
             open();
 
         ContentValues values = new ContentValues();
         values.put(MySQLiteHelper.COLUMN_SERIES_TITLE, series);
         values.put(MySQLiteHelper.COLUMN_SERIES_POSTER, imageResource);
+        values.put(MySQLiteHelper.COLUMN_SERIES_DESCRIPTION, description);
         long insertId = database.insert(MySQLiteHelper.TABLE_SERIES, null, values);
 
         if (database.isOpen())
@@ -54,13 +55,14 @@ public class DataSource {
         return insertId;
     }
 
-    public long createWatchedSeries(String series, int imageResource) {
+    public long createWatchedSeries(String series, int imageResource, String description) {
         if (!database.isOpen())
             open();
 
         ContentValues values = new ContentValues();
         values.put(MySQLiteHelper.COLUMN_SERIES_TITLE, series);
         values.put(MySQLiteHelper.COLUMN_SERIES_POSTER, imageResource);
+        values.put(MySQLiteHelper.COLUMN_SERIES_DESCRIPTION, description);
         long insertId = database.insert(MySQLiteHelper.TABLE_SELECTED_SERIES, null, values);
 
         if (database.isOpen())
@@ -71,6 +73,17 @@ public class DataSource {
     }
 
     public void deleteSeries(Series series) {
+        if (!database.isOpen())
+            open();
+
+        database.delete(MySQLiteHelper.TABLE_SERIES, MySQLiteHelper.COLUMN_SERIES_ID + " =?",
+                new String[] {Long.toString(series.getId())} );
+
+        if (database.isOpen())
+            close();
+    }
+
+    public void deleteWatchedSeries(Series series) {
         if (!database.isOpen())
             open();
 
@@ -100,7 +113,7 @@ public class DataSource {
             open();
 
         ContentValues args = new ContentValues();
-        args.put(MySQLiteHelper.COLUMN_SERIES_TITLE, series.getTitle());
+        args.put(MySQLiteHelper.COLUMN_SERIES_DESCRIPTION, series.getDescription());
         database.update(MySQLiteHelper.TABLE_SELECTED_SERIES, args, MySQLiteHelper.COLUMN_SERIES_ID +
                 "=?", new String[] {Long.toString(series.getId())});
 
@@ -116,6 +129,22 @@ public class DataSource {
 
         Cursor cursor = database.query(MySQLiteHelper.TABLE_SERIES, seriesAllColumns, MySQLiteHelper.COLUMN_SERIES_ID +
         "=?", new String[] {Long.toString(columnId)}, null, null, null);
+        cursor.moveToFirst();
+        Series series = cursorToSeries(cursor);
+        cursor.close();
+
+        if (database.isOpen())
+            close();
+
+        return series;
+    }
+
+    public Series getWatchedSeries(long columnId) {
+        if (!database.isOpen())
+            open();
+
+        Cursor cursor = database.query(MySQLiteHelper.TABLE_SELECTED_SERIES, seriesAllColumns, MySQLiteHelper.COLUMN_SERIES_ID +
+                "=?", new String[] {Long.toString(columnId)}, null, null, null);
         cursor.moveToFirst();
         Series series = cursorToSeries(cursor);
         cursor.close();
@@ -201,7 +230,7 @@ public class DataSource {
             series.setId(cursor.getLong(cursor.getColumnIndexOrThrow(MySQLiteHelper.COLUMN_SERIES_ID)));
             series.setTitle(cursor.getString(cursor.getColumnIndexOrThrow(MySQLiteHelper.COLUMN_SERIES_TITLE)));
             series.setImageSource(cursor.getInt(cursor.getColumnIndexOrThrow(MySQLiteHelper.COLUMN_SERIES_POSTER)));
-
+            series.setDescription(cursor.getString(cursor.getColumnIndexOrThrow(MySQLiteHelper.COLUMN_SERIES_DESCRIPTION)));
             return series;
         } catch (CursorIndexOutOfBoundsException exception) {
             exception.printStackTrace();

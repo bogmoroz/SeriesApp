@@ -9,6 +9,7 @@ public class Series {
     private long id;
     private String title;
     private int imageSource;
+    private String description;
 
 //    public Series (String title, int imageSource) {
 //        this.title = title;
@@ -38,6 +39,10 @@ public class Series {
     public void setImageSource(int imageSource) {
         this.imageSource = imageSource;
     }
+
+    public String getDescription() { return description; }
+
+    public void setDescription(String description) { this.description = description; }
 
     @Override
     public String toString() {
